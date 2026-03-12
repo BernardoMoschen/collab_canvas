@@ -1,5 +1,6 @@
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
+import { initUndoManager } from './undoManager'
 import type { Shape } from '../types'
 
 let _doc: Y.Doc | null = null
@@ -11,6 +12,7 @@ export function initRoom(roomId: string, userId: string, userName: string, userC
 
   _doc = new Y.Doc()
   _shapes = _doc.getArray<Y.Map<unknown>>('shapes')
+  initUndoManager(_shapes)
 
   const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   const wsUrl = isDev

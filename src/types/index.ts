@@ -1,4 +1,4 @@
-export type ToolType = 'select' | 'pen' | 'rect' | 'ellipse' | 'sticky'
+export type ToolType = 'select' | 'pen' | 'rect' | 'ellipse' | 'sticky' | 'text' | 'arrow'
 
 export interface CursorState {
   id: string
@@ -47,4 +47,21 @@ export interface StickyShape extends BaseShape {
   bgColor: string
 }
 
-export type Shape = PathShape | RectShape | EllipseShape | StickyShape
+export interface TextShape extends BaseShape {
+  type: 'text'
+  x: number
+  y: number
+  content: string
+  fontSize: number
+}
+
+export interface ArrowShape extends BaseShape {
+  type: 'arrow'
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+  strokeWidth: number
+}
+
+export type Shape = PathShape | RectShape | EllipseShape | StickyShape | TextShape | ArrowShape

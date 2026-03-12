@@ -1,7 +1,10 @@
 import { useRef, useState } from 'react'
 import { Line, Rect, Ellipse, Group, Text, Rect as KonvaRect } from 'react-konva'
 import type Konva from 'konva'
-import type { Shape, ToolType } from '../types'
+import type { Shape, ToolType, TextShape, ArrowShape } from '../types'
+import { StickyEditor } from './StickyEditor'
+import { TextShapeNode } from './TextShapeNode'
+import { ArrowShapeNode } from './ArrowShapeNode'
 
 interface Props {
   shape: Shape
@@ -12,7 +15,7 @@ interface Props {
   onContentChange: (content: string) => void
 }
 
-export function ShapeNode({ shape, isSelected, tool, onSelect, onMove }: Omit<Props, 'onContentChange'> & { onContentChange?: (content: string) => void }) {
+export function ShapeNode({ shape, isSelected, tool, onSelect, onMove, onContentChange }: Props) {
   const [editing, setEditing] = useState(false)
   const dragStart = useRef<{ x: number; y: number } | null>(null)
 
@@ -82,29 +85,28 @@ export function ShapeNode({ shape, isSelected, tool, onSelect, onMove }: Omit<Pr
 
   if (shape.type === 'sticky') {
     return (
-      <Group x={shape.x} y={shape.y} {...commonProps}>
-        {/* Card */}
-        <KonvaRect
-          width={shape.width}
-          height={shape.height}
-          fill={shape.bgColor}
-          cornerRadius={6}
-          shadowColor="rgba(0,0,0,0.18)"
-          shadowBlur={8}
-          shadowOffsetY={3}
-          strokeWidth={isSelected ? 2 : 0}
-          stroke={isSelected ? '#6366f1' : undefined}
-        />
-        {/* Top strip */}
-        <KonvaRect
-          width={shape.width}
-          height={10}
-          fill={shape.bgColor}
-          cornerRadius={[6, 6, 0, 0]}
-          opacity={0.6}
-        />
-        {/* Content — show input when editing, text otherwise */}
-        {!editing ? (
+      <>
+        <Group x={shape.x} y={shape.y} {...commonProps}>
+          {/* Card */}
+          <KonvaRect
+            width={shape.width}
+            height={shape.height}
+            fill={shape.bgColor}
+            cornerRadius={6}
+            shadowColor="rgba(0,0,0,0.18)"
+            shadowBlur={8}
+            shadowOffsetY={3}
+            strokeWidth={isSelected ? 2 : 0}
+            stroke={isSelected ? '#6366f1' : undefined}
+          />
+          {/* Top strip */}
+          <KonvaRect
+            width={shape.width}
+            height={10}
+            fill={shape.bgColor}
+            cornerRadius={[6, 6, 0, 0]}
+            opacity={0.6}
+          />
           <Text
             text={shape.content}
             fontSize={13}
@@ -116,16 +118,45 @@ export function ShapeNode({ shape, isSelected, tool, onSelect, onMove }: Omit<Pr
             wrap="word"
             onDblClick={() => setEditing(true)}
           />
-        ) : (
-          // Invisible konva rect to capture the area; real textarea rendered in DOM overlay
-          <KonvaRect
-            width={shape.width}
-            height={shape.height}
-            fill="transparent"
-            onDblClick={() => setEditing(false)}
+        </Group>
+        {editing && (
+          <StickyEditor
+            shape={shape}
+            stageScale={1}
+            stagePos={{ x: 0, y: 0 }}
+            onCommit={(content) => {
+              onContentChange(content)
+              setEditing(false)
+            }}
+            onClose={() => setEditing(false)}
           />
         )}
-      </Group>
+      </>
+    )
+  }
+
+  if (shape.type === 'text') {
+    return (
+      <TextShapeNode
+        shape={shape as TextShape}
+        isSelected={isSelected}
+        tool={tool}
+        onSelect={onSelect}
+        onMove={onMove}
+        onContentChange={onContentChange}
+      />
+    )
+  }
+
+  if (shape.type === 'arrow') {
+    return (
+      <ArrowShapeNode
+        shape={shape as ArrowShape}
+        isSelected={isSelected}
+        tool={tool}
+        onSelect={onSelect}
+        onMove={onMove}
+      />
     )
   }
 

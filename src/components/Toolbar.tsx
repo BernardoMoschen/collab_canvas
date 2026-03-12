@@ -1,4 +1,5 @@
 import { useStore } from '../store'
+import { useUndoRedo } from '../hooks/useUndoRedo'
 import { STICKY_COLORS } from '../lib/colors'
 import type { ToolType } from '../types'
 
@@ -13,10 +14,13 @@ const TOOLS: { id: ToolType; label: string; icon: string; hint: string }[] = [
   { id: 'rect', label: 'Rect', icon: '▭', hint: 'R' },
   { id: 'ellipse', label: 'Circle', icon: '○', hint: 'E' },
   { id: 'sticky', label: 'Sticky', icon: '📝', hint: 'N' },
+  { id: 'text', label: 'Text', icon: 'T', hint: 'T' },
+  { id: 'arrow', label: 'Arrow', icon: '→', hint: 'A' },
 ]
 
 export function Toolbar() {
   const { tool, strokeColor, stickyColor, setTool, setStrokeColor, setStickyColor } = useStore()
+  const { undo, redo, canUndo, canRedo } = useUndoRedo()
 
   return (
     <div
@@ -48,8 +52,8 @@ export function Toolbar() {
       {/* Divider */}
       <div className="my-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }} />
 
-      {/* Stroke color swatches (for pen / shapes) */}
-      {(tool === 'pen' || tool === 'rect' || tool === 'ellipse') && (
+      {/* Stroke color swatches (for pen / shapes / text / arrow) */}
+      {(tool === 'pen' || tool === 'rect' || tool === 'ellipse' || tool === 'text' || tool === 'arrow') && (
         <>
           {STROKE_COLORS.map((c) => (
             <button
@@ -66,6 +70,27 @@ export function Toolbar() {
           <div className="my-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }} />
         </>
       )}
+
+      {/* Undo / Redo */}
+      {[
+        { fn: undo, enabled: canUndo, icon: '↩', label: 'Undo (Ctrl+Z)' },
+        { fn: redo, enabled: canRedo, icon: '↪', label: 'Redo (Ctrl+Shift+Z)' },
+      ].map(({ fn, enabled, icon, label }) => (
+        <button
+          key={label}
+          onClick={fn}
+          disabled={!enabled}
+          title={label}
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-base transition-all"
+          style={{
+            background: 'transparent',
+            color: enabled ? '#334155' : '#cbd5e1',
+            cursor: enabled ? 'pointer' : 'default',
+          }}
+        >
+          {icon}
+        </button>
+      ))}
 
       {/* Sticky color swatches */}
       {tool === 'sticky' && (
