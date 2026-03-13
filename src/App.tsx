@@ -26,6 +26,11 @@ export default function App() {
   }, [roomId, userId, userName, userColor])
 
   useEffect(() => {
+    document.title = `collab-canvas #${roomId}`
+    return () => { document.title = 'collab-canvas' }
+  }, [roomId])
+
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return

@@ -27,8 +27,8 @@ const TOOLS: { id: ToolType; label: string; icon: string; hint: string }[] = [
 
 export function Toolbar() {
   const {
-    tool, strokeColor, stickyColor, fillColor,
-    setTool, setStrokeColor, setStickyColor, setFillColor,
+    tool, strokeColor, strokeWidth, stickyColor, fillColor,
+    setTool, setStrokeColor, setStrokeWidth, setStickyColor, setFillColor,
     selectedIds,
     darkMode, gridEnabled, snapToGrid,
     toggleDarkMode, toggleGrid, toggleSnapToGrid,
@@ -98,6 +98,27 @@ export function Toolbar() {
               />
             </button>
           ))}
+          {divider}
+        </>
+      )}
+
+      {/* Stroke width (for pen/rect/ellipse/arrow) */}
+      {(tool === 'pen' || tool === 'rect' || tool === 'ellipse' || tool === 'arrow') && (
+        <>
+          <div style={{ padding: '2px 4px' }}>
+            <div style={{ fontSize: 9, color: '#94a3b8', textAlign: 'center', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4 }}>
+              Width
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={16}
+              step={1}
+              value={strokeWidth}
+              onChange={(e) => setStrokeWidth(Number(e.target.value))}
+              style={{ width: 32, accentColor: '#6366f1', cursor: 'pointer' }}
+            />
+          </div>
           {divider}
         </>
       )}

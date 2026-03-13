@@ -2,9 +2,11 @@ import { useRef, useState } from 'react'
 import { useStore } from '../store'
 import { getRoom } from '../lib/room'
 import { nanoid } from 'nanoid'
+import { useConnectionStatus } from '../hooks/useConnectionStatus'
 
 export function RoomHeader() {
   const { roomId, userName, userColor, setRoomId, setUserName } = useStore()
+  const connStatus = useConnectionStatus()
   const [copied, setCopied] = useState(false)
   const [editingName, setEditingName] = useState(false)
   const [nameValue, setNameValue] = useState(userName)
@@ -55,6 +57,20 @@ export function RoomHeader() {
       </span>
 
       <div className="w-px h-3.5" style={{ background: 'rgba(0,0,0,0.12)' }} />
+
+      {/* Connection status dot */}
+      <div
+        title={connStatus}
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: '50%',
+          flexShrink: 0,
+          background: connStatus === 'connected' ? '#22c55e' : connStatus === 'connecting' ? '#f59e0b' : '#ef4444',
+          boxShadow: connStatus === 'connected' ? '0 0 0 2px rgba(34,197,94,0.25)' : undefined,
+          transition: 'background 0.3s',
+        }}
+      />
 
       {/* Room ID */}
       <code className="text-xs font-mono" style={{ color: '#94a3b8' }}>

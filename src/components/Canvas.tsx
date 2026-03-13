@@ -51,6 +51,7 @@ export function Canvas() {
   const panStart = useRef<{ x: number; y: number; stageX: number; stageY: number } | null>(null)
   const isPanning = useRef(false)
   const [, forceUpdate] = useState(0)
+  const [stageSize, setStageSize] = useState({ width: window.innerWidth, height: window.innerHeight })
 
   // Editing state (outside react-konva tree)
   const [editingShape, setEditingShape] = useState<Shape | null>(null)
@@ -58,6 +59,12 @@ export function Canvas() {
   const [editingPos, setEditingPos] = useState({ x: 0, y: 0 })
 
   useEffect(() => { globalStageRef.current = stageRef.current })
+
+  useEffect(() => {
+    const handler = () => setStageSize({ width: window.innerWidth, height: window.innerHeight })
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
 
   const requestEdit = useCallback((shape: Shape) => {
     const stage = globalStageRef.current
@@ -400,8 +407,8 @@ export function Canvas() {
     >
       <Stage
         ref={stageRef}
-        width={window.innerWidth}
-        height={window.innerHeight}
+        width={stageSize.width}
+        height={stageSize.height}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

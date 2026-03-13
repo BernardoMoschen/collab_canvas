@@ -35,6 +35,7 @@ interface CanvasStore {
 
   setTool: (tool: ToolType) => void
   setStrokeColor: (color: string) => void
+  setStrokeWidth: (width: number) => void
   setFillColor: (color: string) => void
   setStickyColor: (color: string) => void
   setSelectedIds: (ids: string[]) => void
@@ -92,6 +93,7 @@ export const useStore = create<CanvasStore>((set) => ({
 
   setTool: (tool) => set({ tool, selectedIds: [] }),
   setStrokeColor: (strokeColor) => set({ strokeColor }),
+  setStrokeWidth: (strokeWidth) => set({ strokeWidth }),
   setFillColor: (fillColor) => set({ fillColor }),
   setStickyColor: (stickyColor) => set({ stickyColor }),
   setSelectedIds: (selectedIds) => set({ selectedIds }),
