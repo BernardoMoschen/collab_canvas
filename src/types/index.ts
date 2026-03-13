@@ -5,6 +5,8 @@ export interface CursorState {
   name: string
   color: string
   cursor: { x: number; y: number } | null
+  message?: string
+  messageAt?: number
 }
 
 // ── Shapes ────────────────────────────────────────────────
@@ -13,6 +15,7 @@ interface BaseShape {
   id: string
   userId: string
   color: string
+  opacity?: number
 }
 
 export interface PathShape extends BaseShape {
@@ -27,6 +30,7 @@ export interface RectShape extends BaseShape {
   y: number
   width: number
   height: number
+  fillColor?: string
 }
 
 export interface EllipseShape extends BaseShape {
@@ -35,6 +39,7 @@ export interface EllipseShape extends BaseShape {
   y: number
   radiusX: number
   radiusY: number
+  fillColor?: string
 }
 
 export interface StickyShape extends BaseShape {
@@ -64,4 +69,13 @@ export interface ArrowShape extends BaseShape {
   strokeWidth: number
 }
 
-export type Shape = PathShape | RectShape | EllipseShape | StickyShape | TextShape | ArrowShape
+export interface ImageShape extends BaseShape {
+  type: 'image'
+  x: number
+  y: number
+  width: number
+  height: number
+  src: string
+}
+
+export type Shape = PathShape | RectShape | EllipseShape | StickyShape | TextShape | ArrowShape | ImageShape

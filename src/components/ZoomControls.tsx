@@ -32,7 +32,7 @@ export function ZoomControls() {
 
   return (
     <div
-      className="absolute bottom-4 right-48 z-20 flex items-center gap-1 px-2 py-1 rounded-xl"
+      className="absolute bottom-4 right-16 z-20 flex items-center gap-1 px-2 py-1 rounded-xl"
       style={{
         background: 'rgba(255,255,255,0.92)',
         backdropFilter: 'blur(12px)',

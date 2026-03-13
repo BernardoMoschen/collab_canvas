@@ -22,7 +22,7 @@ export function UserList() {
 
   return (
     <div
-      className="absolute bottom-10 left-4 z-20 rounded-2xl"
+      className="absolute bottom-4 left-4 z-20 rounded-2xl"
       style={panelStyle}
     >
       {collapsed ? (
@@ -53,35 +53,32 @@ export function UserList() {
         </div>
       ) : (
         // Expanded: full list
-        <div className="px-3 py-2 min-w-[140px]">
+        <div className="px-3 py-2.5 min-w-[150px]">
           {/* Header */}
-          <div
-            className="text-xs font-semibold mb-2 pb-1"
-            style={{
-              color: '#6366f1',
-              borderBottom: '1px solid rgba(0,0,0,0.07)',
-            }}
-          >
-            {total} online
+          <div className="flex items-center gap-1.5 mb-2">
+            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#22c55e' }} />
+            <span className="text-[10px] font-medium" style={{ color: '#94a3b8' }}>
+              {total} online
+            </span>
           </div>
 
           {/* User rows */}
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1">
             {allUsers.map((user) => {
               const isLocal = user.id === userId
               return (
-                <div key={user.id} className="flex items-center gap-2">
+                <div key={user.id} className="flex items-center gap-2 min-w-0">
                   {/* Avatar circle */}
                   <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                    style={{ background: user.color }}
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
+                    style={{ background: user.color, fontSize: 10 }}
                   >
                     {user.name[0]?.toUpperCase()}
                   </div>
 
                   {/* Name */}
                   <span
-                    className="text-xs font-medium truncate max-w-[80px]"
+                    className="text-xs font-medium truncate flex-1 min-w-0"
                     style={{ color: '#334155' }}
                   >
                     {user.name}
@@ -90,13 +87,13 @@ export function UserList() {
                   {/* "You" badge */}
                   {isLocal && (
                     <span
-                      className="text-[9px] font-semibold px-1 rounded ml-auto flex-shrink-0"
+                      className="text-[10px] font-medium px-1.5 py-px rounded flex-shrink-0"
                       style={{
-                        background: 'rgba(99,102,241,0.12)',
+                        background: 'rgba(99,102,241,0.1)',
                         color: '#6366f1',
                       }}
                     >
-                      You
+                      you
                     </span>
                   )}
                 </div>

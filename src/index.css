@@ -16,3 +16,6 @@ html, body, #root {
 body {
   background: #f8fafc;
 }
+
+/* Scrollbar hide utility */
+.scrollbar-none::-webkit-scrollbar { display: none; }

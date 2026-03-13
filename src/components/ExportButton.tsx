@@ -25,7 +25,7 @@ export function ExportButton({ stageRef }: ExportButtonProps) {
     <button
       onClick={handleExport}
       title="Export as PNG"
-      className="absolute bottom-4 right-20 z-20 flex items-center justify-center rounded-xl transition-all select-none"
+      className="absolute bottom-4 right-4 z-20 flex items-center justify-center rounded-xl transition-all select-none"
       style={{
         width: 40,
         height: 40,

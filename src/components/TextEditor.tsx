@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import type { StickyShape } from '../types'
+import type { TextShape } from '../types'
 
 interface Props {
-  shape: StickyShape
+  shape: TextShape
   stageScale: number
   stagePos: { x: number; y: number }
   onCommit: (content: string) => void
   onClose: () => void
 }
 
-export function StickyEditor({ shape, stageScale, stagePos, onCommit, onClose }: Props) {
+export function TextEditor({ shape, stageScale, stagePos, onCommit, onClose }: Props) {
   const [value, setValue] = useState(shape.content)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -22,17 +22,15 @@ export function StickyEditor({ shape, stageScale, stagePos, onCommit, onClose }:
 
   const left = shape.x * stageScale + stagePos.x
   const top = shape.y * stageScale + stagePos.y
-  const width = shape.width * stageScale
-  const height = shape.height * stageScale
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Escape') {
       onClose()
       return
     }
-    if (e.key === 'Enter' && e.ctrlKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
       onCommit(value)
-      onClose()
     }
   }
 
@@ -47,21 +45,18 @@ export function StickyEditor({ shape, stageScale, stagePos, onCommit, onClose }:
         position: 'fixed',
         left,
         top,
-        width,
-        height,
-        background: 'transparent',
-        border: 'none',
+        minWidth: 120,
+        minHeight: (shape.fontSize + 8) * stageScale,
+        background: 'rgba(255,255,255,0.85)',
+        border: '1px solid #6366f1',
+        borderRadius: 4,
         outline: 'none',
-        resize: 'none',
-        font: `${13 * stageScale}px sans-serif`,
-        color: '#1e293b',
-        paddingLeft: 10 * stageScale,
-        paddingTop: 18 * stageScale,
-        paddingRight: 10 * stageScale,
-        paddingBottom: 0,
+        resize: 'both',
+        font: `${shape.fontSize * stageScale}px sans-serif`,
+        color: shape.color,
+        padding: '2px 4px',
         boxSizing: 'border-box',
         zIndex: 1000,
-        overflow: 'hidden',
       }}
     />
   )

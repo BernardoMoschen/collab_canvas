@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useStore } from '../store'
+import { getRoom } from '../lib/room'
 import { nanoid } from 'nanoid'
 
 export function RoomHeader() {
-  const { roomId, userName, userColor, setRoomId } = useStore()
+  const { roomId, userName, userColor, setRoomId, setUserName } = useStore()
   const [copied, setCopied] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [nameValue, setNameValue] = useState(userName)
+  const nameInputRef = useRef<HTMLInputElement>(null)
 
   const shareUrl = `${window.location.origin}${window.location.pathname}#${roomId}`
 
@@ -20,9 +24,24 @@ export function RoomHeader() {
     window.location.reload()
   }
 
+  function commitName() {
+    const trimmed = nameValue.trim()
+    if (trimmed) {
+      setUserName(trimmed)
+      // Update awareness so peers see the new name immediately
+      try {
+        const { provider } = getRoom()
+        provider.awareness.setLocalStateField('name', trimmed)
+      } catch { /* room not initialized yet */ }
+    } else {
+      setNameValue(userName)
+    }
+    setEditingName(false)
+  }
+
   return (
     <div
-      className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 px-4 py-2 rounded-2xl"
+      className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-2xl"
       style={{
         background: 'rgba(255,255,255,0.92)',
         backdropFilter: 'blur(12px)',
@@ -31,54 +50,76 @@ export function RoomHeader() {
       }}
     >
       {/* Brand */}
-      <span className="text-sm font-bold tracking-tight" style={{ color: '#6366f1' }}>
+      <span className="text-xs font-semibold" style={{ color: '#6366f1' }}>
         collab-canvas
       </span>
 
-      <div className="w-px h-4" style={{ background: 'rgba(0,0,0,0.12)' }} />
+      <div className="w-px h-3.5" style={{ background: 'rgba(0,0,0,0.12)' }} />
 
       {/* Room ID */}
-      <code className="text-xs font-mono" style={{ color: '#64748b' }}>
+      <code className="text-xs font-mono" style={{ color: '#94a3b8' }}>
         #{roomId}
       </code>
 
       {/* Copy link */}
       <button
         onClick={copyLink}
-        className="text-xs px-3 py-1 rounded-lg font-medium transition-all"
+        className="text-xs px-2.5 py-0.5 rounded-md font-medium transition-all"
         style={{
           background: copied ? '#22c55e' : '#6366f1',
           color: '#fff',
-          boxShadow: '0 2px 8px rgba(99,102,241,0.3)',
         }}
       >
-        {copied ? '✓ Copied' : 'Share link'}
+        {copied ? '✓ Copied' : 'Share'}
       </button>
 
       {/* New room */}
       <button
         onClick={newRoom}
-        className="text-xs px-2 py-1 rounded-lg font-medium transition-all"
+        className="text-xs px-2.5 py-0.5 rounded-md font-medium transition-all"
         style={{ background: 'rgba(0,0,0,0.06)', color: '#64748b' }}
         title="Open a fresh room"
       >
-        + New room
+        New room
       </button>
 
-      <div className="w-px h-4" style={{ background: 'rgba(0,0,0,0.12)' }} />
+      <div className="w-px h-3.5" style={{ background: 'rgba(0,0,0,0.12)' }} />
 
       {/* Current user */}
-      <div className="flex items-center gap-2">
-        <div
-          className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold"
-          style={{ background: userColor }}
+      <div
+        className="w-6 h-6 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
+        style={{ background: userColor, fontSize: 10 }}
+      >
+        {userName[0]?.toUpperCase()}
+      </div>
+      {editingName ? (
+        <input
+          ref={nameInputRef}
+          value={nameValue}
+          autoFocus
+          onChange={(e) => setNameValue(e.target.value)}
+          onBlur={commitName}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commitName()
+            if (e.key === 'Escape') { setNameValue(userName); setEditingName(false) }
+          }}
+          className="text-xs font-medium rounded px-1 outline-none"
+          style={{
+            color: '#334155',
+            border: '1px solid #6366f1',
+            width: Math.max(60, nameValue.length * 7 + 16),
+          }}
+        />
+      ) : (
+        <span
+          className="text-xs font-medium cursor-pointer hover:underline"
+          style={{ color: '#334155' }}
+          title="Click to edit your name"
+          onClick={() => { setNameValue(userName); setEditingName(true) }}
         >
-          {userName[0]?.toUpperCase()}
-        </div>
-        <span className="text-xs font-medium" style={{ color: '#334155' }}>
           {userName}
         </span>
-      </div>
+      )}
     </div>
   )
 }

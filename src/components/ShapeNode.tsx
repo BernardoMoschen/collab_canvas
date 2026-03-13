@@ -1,10 +1,10 @@
-import { useRef, useState } from 'react'
-import { Line, Rect, Ellipse, Group, Text, Rect as KonvaRect } from 'react-konva'
+import { useRef, useState, useEffect } from 'react'
+import { Line, Rect, Ellipse, Group, Text, Rect as KonvaRect, Image as KonvaImage } from 'react-konva'
 import type Konva from 'konva'
-import type { Shape, ToolType, TextShape, ArrowShape } from '../types'
-import { StickyEditor } from './StickyEditor'
+import type { Shape, ToolType, TextShape, ArrowShape, RectShape, EllipseShape, StickyShape, ImageShape } from '../types'
 import { TextShapeNode } from './TextShapeNode'
 import { ArrowShapeNode } from './ArrowShapeNode'
+import { ResizeHandles } from './ResizeHandles'
 
 interface Props {
   shape: Shape
@@ -13,16 +13,18 @@ interface Props {
   onSelect: () => void
   onMove: (dx: number, dy: number) => void
   onContentChange: (content: string) => void
+  onUpdate: (updates: Partial<Shape>) => void
+  onEditRequest: (shape: Shape) => void
 }
 
-export function ShapeNode({ shape, isSelected, tool, onSelect, onMove, onContentChange }: Props) {
-  const [editing, setEditing] = useState(false)
+export function ShapeNode({ shape, isSelected, tool, onSelect, onMove, onContentChange, onUpdate, onEditRequest }: Props) {
   const dragStart = useRef<{ x: number; y: number } | null>(null)
 
   const draggable = tool === 'select'
 
   const commonProps = {
     draggable,
+    opacity: shape.opacity ?? 1,
     onClick: onSelect,
     onDragStart: (e: Konva.KonvaEventObject<DragEvent>) => {
       dragStart.current = { x: e.target.x(), y: e.target.y() }
@@ -55,38 +57,54 @@ export function ShapeNode({ shape, isSelected, tool, onSelect, onMove, onContent
 
   if (shape.type === 'rect') {
     return (
-      <Rect
-        x={shape.x} y={shape.y}
-        width={shape.width} height={shape.height}
-        stroke={shape.color}
-        strokeWidth={2}
-        fill={shape.color + '22'}
-        shadowColor={isSelected ? '#6366f1' : undefined}
-        shadowBlur={isSelected ? 12 : 0}
-        {...commonProps}
-      />
+      <>
+        <Rect
+          x={shape.x} y={shape.y}
+          width={shape.width} height={shape.height}
+          stroke={shape.color}
+          strokeWidth={2}
+          fill={shape.fillColor && shape.fillColor !== 'transparent' ? shape.fillColor : shape.color + '22'}
+          shadowColor={isSelected ? '#6366f1' : undefined}
+          shadowBlur={isSelected ? 12 : 0}
+          {...commonProps}
+        />
+        {isSelected && tool === 'select' && (
+          <ResizeHandles
+            shape={shape as RectShape}
+            onUpdate={(u) => onUpdate(u as Partial<Shape>)}
+          />
+        )}
+      </>
     )
   }
 
   if (shape.type === 'ellipse') {
     return (
-      <Ellipse
-        x={shape.x} y={shape.y}
-        radiusX={shape.radiusX} radiusY={shape.radiusY}
-        stroke={shape.color}
-        strokeWidth={2}
-        fill={shape.color + '22'}
-        shadowColor={isSelected ? '#6366f1' : undefined}
-        shadowBlur={isSelected ? 12 : 0}
-        {...commonProps}
-      />
+      <>
+        <Ellipse
+          x={shape.x} y={shape.y}
+          radiusX={shape.radiusX} radiusY={shape.radiusY}
+          stroke={shape.color}
+          strokeWidth={2}
+          fill={shape.fillColor && shape.fillColor !== 'transparent' ? shape.fillColor : shape.color + '22'}
+          shadowColor={isSelected ? '#6366f1' : undefined}
+          shadowBlur={isSelected ? 12 : 0}
+          {...commonProps}
+        />
+        {isSelected && tool === 'select' && (
+          <ResizeHandles
+            shape={shape as EllipseShape}
+            onUpdate={(u) => onUpdate(u as Partial<Shape>)}
+          />
+        )}
+      </>
     )
   }
 
   if (shape.type === 'sticky') {
     return (
       <>
-        <Group x={shape.x} y={shape.y} {...commonProps}>
+        <Group x={shape.x} y={shape.y} {...commonProps} onDblClick={() => onEditRequest(shape)}>
           {/* Card */}
           <KonvaRect
             width={shape.width}
@@ -116,19 +134,12 @@ export function ShapeNode({ shape, isSelected, tool, onSelect, onMove, onContent
             y={18}
             width={shape.width - 20}
             wrap="word"
-            onDblClick={() => setEditing(true)}
           />
         </Group>
-        {editing && (
-          <StickyEditor
-            shape={shape}
-            stageScale={1}
-            stagePos={{ x: 0, y: 0 }}
-            onCommit={(content) => {
-              onContentChange(content)
-              setEditing(false)
-            }}
-            onClose={() => setEditing(false)}
+        {isSelected && tool === 'select' && (
+          <ResizeHandles
+            shape={shape as StickyShape}
+            onUpdate={(u) => onUpdate(u as Partial<Shape>)}
           />
         )}
       </>
@@ -144,6 +155,7 @@ export function ShapeNode({ shape, isSelected, tool, onSelect, onMove, onContent
         onSelect={onSelect}
         onMove={onMove}
         onContentChange={onContentChange}
+        onEditRequest={() => onEditRequest(shape)}
       />
     )
   }
@@ -156,9 +168,41 @@ export function ShapeNode({ shape, isSelected, tool, onSelect, onMove, onContent
         tool={tool}
         onSelect={onSelect}
         onMove={onMove}
+        onUpdate={(u) => onUpdate(u as Partial<Shape>)}
       />
     )
   }
 
+  if (shape.type === 'image') {
+    return <ImageShapeNode shape={shape as ImageShape} isSelected={isSelected} {...commonProps} />
+  }
+
   return null
+}
+
+function ImageShapeNode({ shape, isSelected, ...commonProps }: {
+  shape: ImageShape
+  isSelected: boolean
+  draggable: boolean
+  onClick: () => void
+  onDragStart: (e: Konva.KonvaEventObject<DragEvent>) => void
+  onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => void
+}) {
+  const [image, setImage] = useState<HTMLImageElement | null>(null)
+  useEffect(() => {
+    const img = new window.Image()
+    img.src = shape.src
+    img.onload = () => setImage(img)
+  }, [shape.src])
+
+  return (
+    <KonvaImage
+      image={image ?? undefined}
+      x={shape.x} y={shape.y}
+      width={shape.width} height={shape.height}
+      shadowColor={isSelected ? '#6366f1' : undefined}
+      shadowBlur={isSelected ? 12 : 0}
+      {...commonProps}
+    />
+  )
 }

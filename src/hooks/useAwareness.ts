@@ -20,6 +20,8 @@ export function useAwareness(): CursorState[] {
             name: String(state.name ?? 'Guest'),
             color: String(state.color ?? '#888'),
             cursor: state.cursor as CursorState['cursor'],
+            message: state.message as string | undefined,
+            messageAt: state.messageAt as number | undefined,
           })
         }
       })
